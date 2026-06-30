@@ -22,9 +22,11 @@ fun BookScreen(viewModel: BookViewModel) {
     val chapters by viewModel.chapters.collectAsState(initial = emptyList())
     val stats by viewModel.stats.collectAsState()
 
-    // Группируем по категориям
-    val categories = chapters.groupBy { it.bookCategory }.keys.toList()
+    // Группируем по категориям и сортируем по номеру (1, 2, 3... 10)
     val groupedChapters = chapters.groupBy { it.bookCategory }
+    val categories = groupedChapters.keys.sortedBy { category ->
+        category.takeWhile { it.isDigit() }.toIntOrNull() ?: 0
+    }
 
     val pagerState = rememberPagerState(initialPage = 0)
     val coroutineScope = rememberCoroutineScope()
@@ -44,7 +46,7 @@ fun BookScreen(viewModel: BookViewModel) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "📖 График чтения Библии",
+                        text = "📖 Чтение Библии",
                         style = MaterialTheme.typography.headlineMedium
                     )
                 }
@@ -57,7 +59,7 @@ fun BookScreen(viewModel: BookViewModel) {
                             .padding(top = 8.dp)
                     )
                     Text(
-                        text = "Прогресс: ${(stats.progress * 100).toInt()}%",
+                        text = "Выполнено: ${stats.readChapters} из ${stats.totalChapters} шагов",
                         style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.padding(top = 4.dp)
                     )
@@ -70,7 +72,6 @@ fun BookScreen(viewModel: BookViewModel) {
             }
         }
 
-        // Если нет шагов - показываем кнопку загрузки
         if (chapters.isEmpty()) {
             Box(
                 modifier = Modifier.fillMaxSize(),
@@ -88,7 +89,6 @@ fun BookScreen(viewModel: BookViewModel) {
                 }
             }
         } else {
-            // Табы с названиями категорий
             ScrollableTabRow(
                 selectedTabIndex = pagerState.currentPage,
                 modifier = Modifier.fillMaxWidth(),
@@ -111,7 +111,6 @@ fun BookScreen(viewModel: BookViewModel) {
                 }
             }
 
-            // Свайпаемые страницы с содержимым
             HorizontalPager(
                 count = categories.size,
                 state = pagerState,
@@ -125,7 +124,6 @@ fun BookScreen(viewModel: BookViewModel) {
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    // Заголовок с названием категории
                     item {
                         Card(
                             modifier = Modifier.fillMaxWidth(),
@@ -161,7 +159,6 @@ fun BookScreen(viewModel: BookViewModel) {
                 }
             }
 
-            // Кнопки навигации по разделам
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -205,7 +202,6 @@ fun BookScreen(viewModel: BookViewModel) {
                 }
             }
 
-            // Индикатор страниц (точки внизу)
             if (categories.size > 1) {
                 Row(
                     modifier = Modifier
