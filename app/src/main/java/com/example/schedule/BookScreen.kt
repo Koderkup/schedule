@@ -47,12 +47,6 @@ fun BookScreen(viewModel: BookViewModel) {
                         text = "📖 Чтение Библии",
                         style = MaterialTheme.typography.headlineMedium
                     )
-                    if (stats.totalChapters > 0) {
-                        Text(
-                            text = "${stats.readChapters}/${stats.totalChapters}",
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                    }
                 }
 
                 if (stats.totalChapters > 0) {
@@ -63,7 +57,7 @@ fun BookScreen(viewModel: BookViewModel) {
                             .padding(top = 8.dp)
                     )
                     Text(
-                        text = "Прочитано: ${stats.readChapters} из ${stats.totalChapters} глав",
+                        text = "Прогресс: ${(stats.progress * 100).toInt()}%",
                         style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.padding(top = 4.dp)
                     )
@@ -94,7 +88,7 @@ fun BookScreen(viewModel: BookViewModel) {
                 }
             }
         } else {
-            // Табы с названиями категорий - упрощенная версия без индикатора
+            // Табы с названиями категорий
             ScrollableTabRow(
                 selectedTabIndex = pagerState.currentPage,
                 modifier = Modifier.fillMaxWidth(),

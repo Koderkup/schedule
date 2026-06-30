@@ -15,15 +15,16 @@ class ReminderManager(private val context: Context) {
         private const val REQUEST_CODE = 100
     }
 
-    fun scheduleDailyReminder() {
+    fun scheduleDailyReminderAt(hour: Int, minute: Int) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
         val calendar = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, 8)
-            set(Calendar.MINUTE, 0)
+            set(Calendar.HOUR_OF_DAY, hour)
+            set(Calendar.MINUTE, minute)
             set(Calendar.SECOND, 0)
         }
 
+        // Если время уже прошло сегодня — ставим на завтра
         if (calendar.timeInMillis < System.currentTimeMillis()) {
             calendar.add(Calendar.DAY_OF_YEAR, 1)
         }

@@ -1,13 +1,17 @@
 package com.example.schedule
 
+import android.app.TimePickerDialog
+import android.content.Context
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import java.util.*
 
 @Composable
 fun SettingsScreen(
@@ -17,9 +21,14 @@ fun SettingsScreen(
     reminderManager: ReminderManager? = null
 ) {
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
     var showConfirmDialog by remember { mutableStateOf(false) }
     var darkTheme by remember { mutableStateOf(isDarkTheme) }
+
     var remindersEnabled by remember { mutableStateOf(false) }
+    var reminderHour by remember { mutableIntStateOf(8) }
+    var reminderMinute by remember { mutableIntStateOf(0) }
+    var showTimePicker by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -72,43 +81,61 @@ fun SettingsScreen(
                 }
             }
 
-            // Напоминания (работающие!)
+            // Напоминания с выбором времени
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Row(
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                            .padding(16.dp)
                     ) {
-                        Column {
-                            Text(
-                                text = "🔔 Напоминания",
-                                style = MaterialTheme.typography.titleMedium
-                            )
-                            Text(
-                                text = if (remindersEnabled)
-                                    "Напоминания включены на 8:00"
-                                else
-                                    "Ежедневное напоминание о чтении",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column {
+                                Text(
+                                    text = "🔔 Напоминания",
+                                    style = MaterialTheme.typography.titleMedium
+                                )
+                                Text(
+                                    text = if (remindersEnabled)
+                                        "Ежедневно в ${String.format(Locale.getDefault(), "%02d:%02d", reminderHour, reminderMinute)}"
+                                    else
+                                        "Ежедневное напоминание о чтении",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            Switch(
+                                checked = remindersEnabled,
+                                onCheckedChange = { checked ->
+                                    remindersEnabled = checked
+                                    if (checked) {
+                                        reminderManager?.scheduleDailyReminderAt(reminderHour, reminderMinute)
+                                    } else {
+                                        reminderManager?.cancelReminder()
+                                    }
+                                }
                             )
                         }
-                        Switch(
-                            checked = remindersEnabled,
-                            onCheckedChange = { checked ->
-                                remindersEnabled = checked
-                                if (checked) {
-                                    reminderManager?.scheduleDailyReminder()
-                                } else {
-                                    reminderManager?.cancelReminder()
-                                }
+
+                        if (remindersEnabled) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Button(
+                                onClick = { showTimePicker = true },
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                                )
+                            ) {
+                                Text("Изменить время: ${String.format(Locale.getDefault(), "%02d:%02d", reminderHour, reminderMinute)}")
                             }
-                        )
+                        }
                     }
                 }
             }
@@ -208,6 +235,26 @@ fun SettingsScreen(
                 }
             }
         }
+    }
+
+    // Диалог выбора времени
+    if (showTimePicker) {
+        TimePickerDialog(
+            context,
+            { _, hourOfDay, minute ->
+                reminderHour = hourOfDay
+                reminderMinute = minute
+                if (remindersEnabled) {
+                    reminderManager?.cancelReminder()
+                    reminderManager?.scheduleDailyReminderAt(hourOfDay, minute)
+                }
+                showTimePicker = false
+            },
+            reminderHour,
+            reminderMinute,
+            true
+        ).show()
+        showTimePicker = false
     }
 
     // Диалог подтверждения очистки
