@@ -1,17 +1,42 @@
 package com.example.schedule
 
 import kotlinx.coroutines.flow.Flow
+import java.util.Calendar
+import java.util.Date
 
 class ChapterRepository(private val chapterDao: ChapterDao) {
 
     fun getAllChapters(): Flow<List<Chapter>> = chapterDao.getAllChapters()
+
+    fun searchChapters(query: String): Flow<List<Chapter>> = chapterDao.searchChapters(query)
 
     suspend fun addChapter(chapter: Chapter) {
         chapterDao.insertChapter(chapter)
     }
 
     suspend fun updateReadStatus(chapterId: Int, isRead: Boolean) {
-        chapterDao.updateReadStatus(chapterId, isRead)
+        val readDate = if (isRead) System.currentTimeMillis() else null
+        chapterDao.updateReadStatusWithDate(chapterId, isRead, readDate)
+    }
+
+    suspend fun getReadCount(): Int = chapterDao.getReadCount()
+    suspend fun getTotalCount(): Int = chapterDao.getTotalCount()
+    suspend fun getReadCountSince(startDate: Long): Int = chapterDao.getReadCountSince(startDate)
+    suspend fun getBookStatistics(): List<BookStat> = chapterDao.getBookStatistics()
+
+    suspend fun getTodayReadCount(): Int {
+        val calendar = Calendar.getInstance()
+        calendar.set(Calendar.HOUR_OF_DAY, 0)
+        calendar.set(Calendar.MINUTE, 0)
+        calendar.set(Calendar.SECOND, 0)
+        calendar.set(Calendar.MILLISECOND, 0)
+        return chapterDao.getReadCountSince(calendar.timeInMillis)
+    }
+
+    suspend fun getProgress(): Pair<Int, Int> {
+        val read = chapterDao.getReadCount()
+        val total = chapterDao.getTotalCount()
+        return Pair(read, total)
     }
 
     suspend fun addSampleChapters() {
@@ -19,6 +44,9 @@ class ChapterRepository(private val chapterDao: ChapterDao) {
         chapters.forEach { chapterDao.insertChapter(it) }
     }
 
+    suspend fun clearAllChapters() {
+        chapterDao.deleteAll()
+    }
     private fun getBibleChapters(): List<Chapter> {
         return listOf(
             // КНИГИ МОИСЕЯ (Бытие)

@@ -75,4 +75,15 @@ dependencies {
 
     // ViewModel
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
+
+    // Navigation
+    implementation("androidx.navigation:navigation-compose:2.7.7")
+    // DataStore для сохранения настроек
+    implementation("androidx.datastore:datastore-preferences:1.1.0")
+    // Icons Extended (если нужны дополнительные иконки)
+    implementation("androidx.compose.material:material-icons-extended:1.6.7")
+    // Для свайпа и вкладок (Pager)
+    implementation("com.google.accompanist:accompanist-pager:0.35.0-alpha")
+    implementation("com.google.accompanist:accompanist-pager-indicators:0.35.0-alpha")
+
 }
