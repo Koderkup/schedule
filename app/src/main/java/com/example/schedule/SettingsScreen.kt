@@ -22,13 +22,27 @@ fun SettingsScreen(
 ) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
+
     var showConfirmDialog by remember { mutableStateOf(false) }
     var darkTheme by remember { mutableStateOf(isDarkTheme) }
 
-    var remindersEnabled by remember { mutableStateOf(false) }
-    var reminderHour by remember { mutableIntStateOf(8) }
-    var reminderMinute by remember { mutableIntStateOf(0) }
+    // Читаем сохраненные настройки напоминаний
+    val savedRemindersEnabled by settingsDataStore.isRemindersEnabledFlow.collectAsState(initial = false)
+    val savedReminderHour by settingsDataStore.reminderHourFlow.collectAsState(initial = 8)
+    val savedReminderMinute by settingsDataStore.reminderMinuteFlow.collectAsState(initial = 0)
+
+    // Состояния для UI
+    var remindersEnabled by remember { mutableStateOf(savedRemindersEnabled) }
+    var reminderHour by remember { mutableIntStateOf(savedReminderHour) }
+    var reminderMinute by remember { mutableIntStateOf(savedReminderMinute) }
     var showTimePicker by remember { mutableStateOf(false) }
+
+    // Обновляем состояния при изменении сохраненных значений
+    LaunchedEffect(savedRemindersEnabled, savedReminderHour, savedReminderMinute) {
+        remindersEnabled = savedRemindersEnabled
+        reminderHour = savedReminderHour
+        reminderMinute = savedReminderMinute
+    }
 
     Column(
         modifier = Modifier
@@ -114,10 +128,13 @@ fun SettingsScreen(
                                 checked = remindersEnabled,
                                 onCheckedChange = { checked ->
                                     remindersEnabled = checked
-                                    if (checked) {
-                                        reminderManager?.scheduleDailyReminderAt(reminderHour, reminderMinute)
-                                    } else {
-                                        reminderManager?.cancelReminder()
+                                    scope.launch {
+                                        settingsDataStore.setRemindersEnabled(checked)
+                                        if (checked) {
+                                            reminderManager?.scheduleDailyReminderAt(reminderHour, reminderMinute)
+                                        } else {
+                                            reminderManager?.cancelReminder()
+                                        }
                                     }
                                 }
                             )
@@ -162,7 +179,7 @@ fun SettingsScreen(
                                 color = MaterialTheme.colorScheme.error
                             )
                             Text(
-                                text = "Удалить все загруженные главы",
+                                text = "Удалить все загруженные шаги",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onErrorContainer
                             )
@@ -244,9 +261,13 @@ fun SettingsScreen(
             { _, hourOfDay, minute ->
                 reminderHour = hourOfDay
                 reminderMinute = minute
-                if (remindersEnabled) {
-                    reminderManager?.cancelReminder()
-                    reminderManager?.scheduleDailyReminderAt(hourOfDay, minute)
+                scope.launch {
+                    settingsDataStore.setReminderHour(hourOfDay)
+                    settingsDataStore.setReminderMinute(minute)
+                    if (remindersEnabled) {
+                        reminderManager?.cancelReminder()
+                        reminderManager?.scheduleDailyReminderAt(hourOfDay, minute)
+                    }
                 }
                 showTimePicker = false
             },
@@ -262,7 +283,7 @@ fun SettingsScreen(
         AlertDialog(
             onDismissRequest = { showConfirmDialog = false },
             title = { Text("Очистить данные?") },
-            text = { Text("Все загруженные главы будут удалены. Вы уверены?") },
+            text = { Text("Все загруженные шаги будут удалены. Вы уверены?") },
             confirmButton = {
                 Button(
                     onClick = {

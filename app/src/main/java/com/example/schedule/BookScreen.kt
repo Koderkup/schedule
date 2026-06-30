@@ -44,7 +44,7 @@ fun BookScreen(viewModel: BookViewModel) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "📖 Чтение Библии",
+                        text = "📖 График чтения Библии",
                         style = MaterialTheme.typography.headlineMedium
                     )
                 }
@@ -62,7 +62,7 @@ fun BookScreen(viewModel: BookViewModel) {
                         modifier = Modifier.padding(top = 4.dp)
                     )
                     Text(
-                        text = "Сегодня: ${stats.todayRead} глав",
+                        text = "Сегодня: ${stats.todayRead} шагов",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -70,7 +70,7 @@ fun BookScreen(viewModel: BookViewModel) {
             }
         }
 
-        // Если нет глав - показываем кнопку загрузки
+        // Если нет шагов - показываем кнопку загрузки
         if (chapters.isEmpty()) {
             Box(
                 modifier = Modifier.fillMaxSize(),
@@ -78,7 +78,7 @@ fun BookScreen(viewModel: BookViewModel) {
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        text = "📖 Нет глав",
+                        text = "📖 Нет шагов",
                         style = MaterialTheme.typography.bodyLarge
                     )
                     Spacer(modifier = Modifier.height(16.dp))
@@ -144,7 +144,7 @@ fun BookScreen(viewModel: BookViewModel) {
                                 val readInCategory = categoryChapters.count { it.isRead }
                                 val totalInCategory = categoryChapters.size
                                 Text(
-                                    text = "Прочитано: $readInCategory из $totalInCategory глав",
+                                    text = "Выполнено: $readInCategory из $totalInCategory шагов",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )

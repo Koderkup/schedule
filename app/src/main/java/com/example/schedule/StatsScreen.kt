@@ -54,8 +54,8 @@ fun StatsScreen(viewModel: BookViewModel) {
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
-                        StatItem("Всего глав", stats.totalChapters.toString())
-                        StatItem("Прочитано", "${stats.readChapters}")
+                        StatItem("Всего шагов", stats.totalChapters.toString())
+                        StatItem("Пройдено", "${stats.readChapters}")
                         StatItem("Прогресс", "${(stats.progress * 100).toInt()}%")
                         StatItem("Сегодня", "${stats.todayRead}")
                     }
