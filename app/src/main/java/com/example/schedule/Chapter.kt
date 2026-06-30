@@ -7,7 +7,9 @@ import androidx.room.PrimaryKey
 data class Chapter(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
-    val title: String,
+    val bookName: String,
+    val bookCategory: String,
+    val chapterRange: String,
     val pageNumber: Int,
     var isRead: Boolean = false
 )

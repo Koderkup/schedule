@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     id("kotlin-kapt")
+    alias(libs.plugins.kotlin.compose)
 }
 
 android {
@@ -40,9 +41,10 @@ android {
     buildFeatures {
         compose = true
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.10"
-    }
+}
+kapt {
+    correctErrorTypes = true
+    useBuildCache = false
 }
 
 dependencies {
@@ -67,9 +69,9 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
 
     // Room
-    implementation("androidx.room:room-runtime:2.6.1")
-    kapt("androidx.room:room-compiler:2.6.1")
-    implementation("androidx.room:room-ktx:2.6.1")
+    implementation("androidx.room:room-runtime:2.8.4")
+    kapt("androidx.room:room-compiler:2.8.4")
+    implementation("androidx.room:room-ktx:2.8.4")
 
     // ViewModel
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")

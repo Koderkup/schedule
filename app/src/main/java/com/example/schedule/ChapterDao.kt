@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ChapterDao {
-    @Query("SELECT * FROM chapters ORDER BY pageNumber")
+    @Query("SELECT * FROM chapters ORDER BY bookCategory, pageNumber")
     fun getAllChapters(): Flow<List<Chapter>>
 
     @Insert

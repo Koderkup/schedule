@@ -22,7 +22,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Инициализация базы данных
         database = AppDatabase.getDatabase(this)
         repository = ChapterRepository(database.chapterDao())
 
@@ -47,6 +46,9 @@ fun BookScreen(repository: ChapterRepository) {
 
     val chapters by viewModel.chapters.collectAsState(initial = emptyList())
 
+    // Группируем главы по категориям и книгам
+    val groupedChapters = chapters.groupBy { it.bookCategory }
+
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -59,7 +61,7 @@ fun BookScreen(repository: ChapterRepository) {
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
-                    text = "📚 Содержание книги",
+                    text = "📖 Чтение Библии",
                     style = MaterialTheme.typography.headlineMedium
                 )
 
@@ -71,7 +73,6 @@ fun BookScreen(repository: ChapterRepository) {
                     style = MaterialTheme.typography.bodyMedium
                 )
 
-                // Прогресс-бар
                 LinearProgressIndicator(
                     progress = if (totalCount > 0) readCount.toFloat() / totalCount else 0f,
                     modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
@@ -92,7 +93,7 @@ fun BookScreen(repository: ChapterRepository) {
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Button(onClick = { viewModel.addSampleData() }) {
-                        Text("Добавить примеры глав")
+                        Text("Загрузить план чтения Библии")
                     }
                 }
             }
@@ -100,13 +101,34 @@ fun BookScreen(repository: ChapterRepository) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                items(chapters) { chapter ->
-                    ChapterItem(
-                        chapter = chapter,
-                        onToggleRead = { viewModel.toggleReadStatus(chapter) }
-                    )
+                // Отображаем категории с группами
+                groupedChapters.keys.forEach { category ->
+                    // Заголовок категории
+                    item {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.primaryContainer
+                            )
+                        ) {
+                            Text(
+                                text = category,
+                                style = MaterialTheme.typography.titleMedium,
+                                modifier = Modifier.padding(12.dp)
+                            )
+                        }
+                    }
+
+                    // Главы в категории
+                    val categoryChapters = groupedChapters[category] ?: emptyList()
+                    items(categoryChapters) { chapter ->
+                        ChapterItem(
+                            chapter = chapter,
+                            onToggleRead = { viewModel.toggleReadStatus(chapter) }
+                        )
+                    }
                 }
             }
         }
@@ -130,13 +152,13 @@ fun ChapterItem(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(horizontal = 16.dp, vertical = 12.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = chapter.title,
+                    text = "${chapter.bookName} ${chapter.chapterRange}",
                     style = MaterialTheme.typography.titleMedium
                 )
                 Text(
